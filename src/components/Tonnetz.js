@@ -85,7 +85,7 @@ class Tonnetz extends React.Component {
       //bottom row
       if (key === 'z') {
         return this.state.nodes[1];
-      } 
+      }
       if (key === 'x') {
         return this.state.nodes[6];
       } 
