@@ -1,0 +1,200 @@
+import React from 'react';
+import p5 from 'p5';
+import Node from './Node'
+
+class Tonnetz extends React.Component {
+    constructor(props) {
+      super(props);
+      this.myRef = React.createRef("myRef");
+      this.state = {
+        nodeWidth: 38,
+        root: 440,
+        genInterval: 3/2,
+        perInterval: 6/5
+      }
+      this.createNodes = this.createNodes.bind(this);
+    }
+
+    createNodes = (p5) => {
+       let nodes = [];
+       
+       for (let g=-3; g<4; g++) {
+        for (let p=-2; p<3; p++) {
+          nodes.push(<Node generator={g} 
+                           period={p} 
+                           color={{h:(g+3)/7,
+                                   s:1-(p+2)/5,
+                                   v:1}}
+                           screenPosition={this.getScreenPosition(g,p,this.state.nodeWidth,p5)}/>);
+        }
+       }
+
+       this.setState(() => {return{
+        nodes: nodes
+       }});
+    }
+  
+    Sketch = (p5) => {
+        p5.setup = () => {
+          p5.createCanvas(p5.windowWidth, this.props.height);
+          p5.frameRate(60);
+          p5.textAlign(p5.CENTER,p5.CENTER);
+          p5.colorMode(p5.HSB,1.0,1.0,1.0);
+          p5.background(0,0,0);
+          this.createNodes(p5);
+        }
+        
+        p5.draw = () => {
+          p5.background(0,0,0);
+          for (let i=0; i<this.state.nodes.length; i++) {
+            let node = this.state.nodes[i];
+            p5.fill(node.props.color.h,node.props.color.s,node.props.color.v);
+            p5.ellipse(node.props.screenPosition.x,node.props.screenPosition.y,this.state.nodeWidth,this.state.nodeWidth);
+            p5.fill(0);
+            p5.text(node.props.generator+','+node.props.period, node.props.screenPosition.x,node.props.screenPosition.y);
+          }
+        }
+
+        p5.mousePressed = (event) => {
+          for (let i=0; i<this.state.nodes.length; i++) {
+            const node = this.state.nodes[i];
+            if (p5.dist(event.offsetX,event.offsetY,node.props.screenPosition.x,node.props.screenPosition.y) <= this.state.nodeWidth/2) {
+              this.playNote(node);
+            }
+          }
+        }
+
+        p5.windowResized = () => {
+          p5.resizeCanvas(p5.windowWidth, this.props.height);
+          this.createNodes(p5);
+        }
+
+        p5.keyPressed = (event) => {
+          console.log("key pressed: "+event.key);
+          this.playNote(this.getNodeFromKey(event.key));
+        }
+    }
+
+    playNote = (node) => {
+      const freq = this.getFreq(node);
+      console.log("("+node.props.generator + ',' + node.props.period + '): ' + freq);
+      this.props.player.triggerAttackRelease(freq, "16n", this.props.Tone.now());
+    }
+
+    getNodeFromKey = (key) => {
+      //bottom row
+      if (key === 'z') {
+        return this.state.nodes[1];
+      } 
+      if (key === 'x') {
+        return this.state.nodes[6];
+      } 
+      if (key === 'c') {
+        return this.state.nodes[11];
+      } 
+      if (key === 'v') {
+        return this.state.nodes[16];
+      } 
+      if (key === 'b') {
+        return this.state.nodes[21];
+      } 
+      if (key === 'n') {
+        return this.state.nodes[26];
+      } 
+      if (key === 'm') {
+        return this.state.nodes[31];
+      }
+      
+      //middle row
+      if (key === 's') {
+        return this.state.nodes[2];
+      } 
+      if (key === 'd') {
+        return this.state.nodes[7];
+      } 
+      if (key === 'f') {
+        return this.state.nodes[12];
+      } 
+      if (key === 'g') {
+        return this.state.nodes[17];
+      } 
+      if (key === 'h') {
+        return this.state.nodes[22];
+      } 
+      if (key === 'j') {
+        return this.state.nodes[27];
+      } 
+      if (key === 'k') {
+        return this.state.nodes[32];
+      } 
+
+      //top row
+      if (key === 'e') {
+        return this.state.nodes[3];
+      } 
+      if (key === 'r') {
+        return this.state.nodes[8];
+      } 
+      if (key === 't') {
+        return this.state.nodes[13];
+      } 
+      if (key === 'y') {
+        return this.state.nodes[18];
+      } 
+      if (key === 'u') {
+        return this.state.nodes[23];
+      } 
+      if (key === 'i') {
+        return this.state.nodes[28];
+      } 
+      if (key === 'o') {
+        return this.state.nodes[33];
+      }
+
+      return this.state.nodes[0];
+    }
+
+    getFreq = (node) => {
+      let freq = this.state.root;
+      if (node.props.generator > 0) {
+        for (let g=0; g<node.props.generator;g++) {
+          freq *= this.state.genInterval;
+        }
+      } else if (node.props.generator < 0) {
+        for (let g=node.props.generator; g<0;g++) {
+          freq /= this.state.genInterval;
+        }
+      }
+
+      if (node.props.period > 0) {
+        for (let p=0; p<node.props.period;p++) {
+          freq *= this.state.perInterval;
+        }
+      } else if (node.props.period < 0) {
+        for (let p=node.props.period; p<0;p++) {
+          freq /= this.state.perInterval;
+        }
+      }
+      
+      return freq;
+    }
+  
+    componentDidMount() {
+      this.myP5 = new p5(this.Sketch, this.myRef.current);
+    }
+
+    getScreenPosition = (gen,per,width,p5) => {
+      return {
+        x:p5.width/2 + width * (2*gen + per),
+        y:p5.height/2 + Math.sqrt(3) * width * -per
+      }
+    }
+  
+    render() {
+      return (
+        <div id="tonnetz-div" ref={this.myRef}/>
+      )
+    }
+}
+
+export default Tonnetz
