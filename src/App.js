@@ -4,7 +4,22 @@ import * as Tone from 'tone';
 import Tonnetz from './components/Tonnetz';
 
 const player = new Tone.FMSynth().toDestination();
-const tonnetz = <Tonnetz width={600} height={400} player={player} Tone={Tone}/>;
+const filter = new Tone.AutoFilter(5);
+const distortion = new Tone.Reverb(2.5);
+player.chain(filter, distortion, Tone.Destination);
+
+const toneMeter = new Tone.Meter();
+player.connect(toneMeter);
+
+const toneFFT = new Tone.FFT();
+player.connect(toneFFT);
+
+const toneWaveform = new Tone.Waveform(16);
+player.connect(toneWaveform);
+
+
+const tonnetz = <Tonnetz width={600} height={400} player={player} Tone={Tone} follower={toneMeter}/>;
+
 
 class App extends Component {
 

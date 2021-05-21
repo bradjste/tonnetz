@@ -8,9 +8,10 @@ class Tonnetz extends React.Component {
       this.myRef = React.createRef("myRef");
       this.state = {
         nodeWidth: 38,
-        root: 440,
+        root: 220,
         genInterval: 3/2,
-        perInterval: 6/5
+        perInterval: 6/5,
+        activeNode: null
       }
       this.createNodes = this.createNodes.bind(this);
     }
@@ -36,7 +37,7 @@ class Tonnetz extends React.Component {
   
     Sketch = (p5) => {
         p5.setup = () => {
-          p5.createCanvas(p5.windowWidth, this.props.height);
+          p5.createCanvas(p5.windowWidth, p5.windowHeight);
           p5.frameRate(60);
           p5.textAlign(p5.CENTER,p5.CENTER);
           p5.colorMode(p5.HSB,1.0,1.0,1.0);
@@ -46,13 +47,17 @@ class Tonnetz extends React.Component {
         
         p5.draw = () => {
           p5.background(0,0,0);
+          const ampWidth = 30+Math.floor(Math.max(this.props.follower.getValue(),-30));
           for (let i=0; i<this.state.nodes.length; i++) {
             let node = this.state.nodes[i];
             p5.fill(node.props.color.h,node.props.color.s,node.props.color.v);
-            p5.ellipse(node.props.screenPosition.x,node.props.screenPosition.y,this.state.nodeWidth,this.state.nodeWidth);
+            p5.ellipse(node.props.screenPosition.x,node.props.screenPosition.y,this.state.nodeWidth + ampWidth,this.state.nodeWidth + ampWidth);
             p5.fill(0);
             p5.text(node.props.generator+','+node.props.period, node.props.screenPosition.x,node.props.screenPosition.y);
           }
+          p5.fill(1);
+          // console.log(this.props.follower.getValue());
+          p5.text(ampWidth,50,10);
         }
 
         p5.mousePressed = (event) => {
@@ -60,12 +65,14 @@ class Tonnetz extends React.Component {
             const node = this.state.nodes[i];
             if (p5.dist(event.offsetX,event.offsetY,node.props.screenPosition.x,node.props.screenPosition.y) <= this.state.nodeWidth/2) {
               this.playNote(node);
+              this.setActiveNode(node);
             }
           }
+          console.log(this.props.follower);
         }
 
         p5.windowResized = () => {
-          p5.resizeCanvas(p5.windowWidth, this.props.height);
+          p5.resizeCanvas(p5.windowWidth, p5.windowHeight);
           this.createNodes(p5);
         }
 
@@ -79,6 +86,10 @@ class Tonnetz extends React.Component {
       const freq = this.getFreq(node);
       console.log("("+node.props.generator + ',' + node.props.period + '): ' + freq);
       this.props.player.triggerAttackRelease(freq, "16n", this.props.Tone.now());
+    }
+
+    setActiveNode = (node) => {
+
     }
 
     getNodeFromKey = (key) => {
