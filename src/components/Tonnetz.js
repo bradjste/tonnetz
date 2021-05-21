@@ -8,30 +8,36 @@ class Tonnetz extends React.Component {
       this.myRef = React.createRef("myRef");
       this.state = {
         nodeWidth: 38,
-        root: 220,
-        genInterval: 3/2,
-        perInterval: 6/5,
+        root: 440,
+        genInterval: 9/8,
+        perInterval: 25/24,
         activeNode: null
       }
       this.createNodes = this.createNodes.bind(this);
+      this.setActiveNode = this.setActiveNode.bind(this);
     }
 
     createNodes = (p5) => {
        let nodes = [];
+       let count = 0;
        
        for (let g=-3; g<4; g++) {
         for (let p=-2; p<3; p++) {
           nodes.push(<Node generator={g} 
                            period={p} 
+                           key={count}
+                           freq={this.getFreq(g,p)}
                            color={{h:(g+3)/7,
                                    s:1-(p+2)/5,
                                    v:1}}
                            screenPosition={this.getScreenPosition(g,p,this.state.nodeWidth,p5)}/>);
+          count++;
         }
        }
 
-       this.setState(() => {return{
-        nodes: nodes
+       this.setState(() => {
+         return {
+          nodes: nodes
        }});
     }
   
@@ -47,9 +53,14 @@ class Tonnetz extends React.Component {
         
         p5.draw = () => {
           p5.background(0,0,0);
-          const ampWidth = 30+Math.floor(Math.max(this.props.follower.getValue(),-30));
+          let ampWidth = 0;
           for (let i=0; i<this.state.nodes.length; i++) {
             let node = this.state.nodes[i];
+            if (this.state.activeNode != null && node.props == this.state.activeNode.props) {
+              ampWidth = 30+Math.floor(Math.max(this.props.follower.getValue(),-30));
+            } else {
+              ampWidth = 0;
+            }
             p5.fill(node.props.color.h,node.props.color.s,node.props.color.v);
             p5.ellipse(node.props.screenPosition.x,node.props.screenPosition.y,this.state.nodeWidth + ampWidth,this.state.nodeWidth + ampWidth);
             p5.fill(0);
@@ -65,7 +76,6 @@ class Tonnetz extends React.Component {
             const node = this.state.nodes[i];
             if (p5.dist(event.offsetX,event.offsetY,node.props.screenPosition.x,node.props.screenPosition.y) <= this.state.nodeWidth/2) {
               this.playNote(node);
-              this.setActiveNode(node);
             }
           }
           console.log(this.props.follower);
@@ -83,13 +93,17 @@ class Tonnetz extends React.Component {
     }
 
     playNote = (node) => {
-      const freq = this.getFreq(node);
-      console.log("("+node.props.generator + ',' + node.props.period + '): ' + freq);
-      this.props.player.triggerAttackRelease(freq, "16n", this.props.Tone.now());
+      console.log("("+node.props.generator + ',' + node.props.period + '): ' + node.props.freq);
+      this.setActiveNode(node);
+      this.props.player.triggerAttackRelease(node.props.freq, "16n", this.props.Tone.now());
     }
 
     setActiveNode = (node) => {
-
+      this.setState(() => {
+        return {
+          activeNode: node
+        }
+      });
     }
 
     getNodeFromKey = (key) => {
@@ -165,24 +179,24 @@ class Tonnetz extends React.Component {
       return this.state.nodes[0];
     }
 
-    getFreq = (node) => {
+    getFreq = (generator,period) => {
       let freq = this.state.root;
-      if (node.props.generator > 0) {
-        for (let g=0; g<node.props.generator;g++) {
+      if (generator > 0) {
+        for (let g=0; g<generator;g++) {
           freq *= this.state.genInterval;
         }
-      } else if (node.props.generator < 0) {
-        for (let g=node.props.generator; g<0;g++) {
+      } else if (generator < 0) {
+        for (let g=generator; g<0;g++) {
           freq /= this.state.genInterval;
         }
       }
 
-      if (node.props.period > 0) {
-        for (let p=0; p<node.props.period;p++) {
+      if (period > 0) {
+        for (let p=0; p<period;p++) {
           freq *= this.state.perInterval;
         }
-      } else if (node.props.period < 0) {
-        for (let p=node.props.period; p<0;p++) {
+      } else if (period < 0) {
+        for (let p=period; p<0;p++) {
           freq /= this.state.perInterval;
         }
       }

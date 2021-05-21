@@ -3,9 +3,9 @@ import {Component} from 'react';
 import * as Tone from 'tone';
 import Tonnetz from './components/Tonnetz';
 
-const player = new Tone.FMSynth().toDestination();
+const player = new Tone.MembraneSynth().toDestination();
 const filter = new Tone.AutoFilter(5);
-const distortion = new Tone.Reverb(2.5);
+const distortion = new Tone.Distortion(2.5);
 player.chain(filter, distortion, Tone.Destination);
 
 const toneMeter = new Tone.Meter();
