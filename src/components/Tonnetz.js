@@ -68,7 +68,7 @@ class Tonnetz extends React.Component {
           }
           p5.fill(1);
           // console.log(this.props.follower.getValue());
-          p5.text(ampWidth,50,10);
+          // p5.text(ampWidth,50,10);
         }
 
         p5.mousePressed = (event) => {
