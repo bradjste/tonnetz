@@ -9,8 +9,8 @@ class Tonnetz extends React.Component {
       this.state = {
         nodeWidth: 38,
         root: 440,
-        genInterval: 9/8,
-        perInterval: 25/24,
+        genInterval: 3/2,
+        perInterval: 5/4,
         activeNode: null
       }
       this.createNodes = this.createNodes.bind(this);

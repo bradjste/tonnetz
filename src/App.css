@@ -1,6 +1,7 @@
 #App {
   text-align: center;
-  overflow: hidden;
+  overflow-y: hidden;
+  overflow-x: hidden;
   font-size: 0pt;
 }
 
