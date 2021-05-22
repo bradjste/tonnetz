@@ -56,7 +56,7 @@ class Tonnetz extends React.Component {
           let ampWidth = 0;
           for (let i=0; i<this.state.nodes.length; i++) {
             let node = this.state.nodes[i];
-            if (this.state.activeNode != null && node.props == this.state.activeNode.props) {
+            if (this.state.activeNode != null && node.props === this.state.activeNode.props) {
               ampWidth = 30+Math.floor(Math.max(this.props.follower.getValue(),-30));
             } else {
               ampWidth = 0;
