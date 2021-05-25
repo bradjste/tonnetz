@@ -17,7 +17,7 @@ class Tonnetz extends React.Component {
     }
 
     createVoronoi = (p5) => {
-      this.voronoi = new Object();
+      this.voronoi = {};
       this.voronoi.obj = new Voronoi();
       this.voronoi.bbox = {xl: 0, xr: p5.width, yt: 0, yb: p5.height}; // xl is x-left, xr is x-right, yt is y-top, and yb is y-bottom
       this.voronoi.sites = this.getSitesFromNodes();
