@@ -21,16 +21,23 @@ class Tonnetz extends React.Component {
       this.voronoi.obj = new Voronoi();
       this.voronoi.bbox = {xl: 0, xr: p5.width, yt: 0, yb: p5.height}; // xl is x-left, xr is x-right, yt is y-top, and yb is y-bottom
       this.voronoi.sites = this.getSitesFromNodes();
-      this.voronoi.diagram = this.voronoi.obj.compute()
+      this.voronoi.diagram = this.voronoi.obj.compute(this.voronoi.sites, this.voronoi.bbox)
     }
 
     computeVoronoi = () => {
       this.voronoi.recycle(this.voronoi.diagram);
+      this.voronoi.bbox = {xl: 0, xr: p5.width, yt: 0, yb: p5.height}; // xl is x-left, xr is x-right, yt is y-top, and yb is y-bottom
+      this.voronoi.sites = this.getSitesFromNodes();
       this.voronoi.diagram = this.voronoi.obj.compute(this.voronoi.sites, this.voronoi.bbox);
     }
 
-    drawVoronoi = () => {
-      
+    drawVoronoi = (p5) => {
+      p5.stroke(1);
+      const edges = this.voronoi.diagram.edges;
+      for (let i = 0; i < edges.length; i++) {
+        const edge = edges[i];
+        p5.line(edge.va.x,edge.va.y,edge.vb.x,edge.vb.y);
+      }
     }
 
     getSitesFromNodes = () => {
@@ -75,12 +82,13 @@ class Tonnetz extends React.Component {
           p5.colorMode(p5.HSB,1.0,1.0,1.0);
           p5.background(0,0,0);
           this.createNodes(p5);
-          // this.createVoronoi(p5);
+          this.createVoronoi(p5);
         }
         
         p5.draw = () => {
           p5.background(0,0,0);
-          // this.drawVoronoi();
+          this.drawVoronoi(p5);
+          p5.noStroke();
           let ampWidth = 0;
           for (let i=0; i<this.state.nodes.length; i++) {
             let node = this.state.nodes[i];
