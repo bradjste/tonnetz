@@ -3,10 +3,18 @@
   overflow-y: hidden;
   overflow-x: hidden;
   font-size: 0pt;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+  display: fixed;
 }
 
 #tonnetz-div {
-  background-color: fuchsia;
+  background-color: black;
   display: inline-block;
   font-size:0px;
 }
