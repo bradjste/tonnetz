@@ -4,8 +4,8 @@ import * as Tone from 'tone';
 import Tonnetz from './components/Tonnetz';
 
 const player = new Tone.PolySynth().toDestination();
-const filter = new Tone.AutoFilter(2);
-const distortion = new Tone.Reverb(2.5);
+const filter = new Tone.AutoFilter(1);
+const distortion = new Tone.Chorus(30);
 player.chain(filter, distortion, Tone.Destination);
 
 const toneMeter = new Tone.Meter();
@@ -59,9 +59,7 @@ class App extends Component {
   render() {
     return (
       <div id="App">
-        {this.state.tonnetz}
-        {/* <button id={'sound-on'}>SOUND ON</button>
-        <button id={'sound-off'}>SOUND OFF</button> */}
+        {tonnetz}
       </div>
     ) 
   }
