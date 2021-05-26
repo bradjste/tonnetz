@@ -3,10 +3,12 @@ import {Component} from 'react';
 import * as Tone from 'tone';
 import Tonnetz from './components/Tonnetz';
 
-const player = new Tone.PolySynth(Tone.Synth).toDestination();
+const limiter = new Tone.Limiter(-12).toDestination();
+const player = new Tone.PolySynth(Tone.Synth).connect(limiter);
 const filter = new Tone.AutoFilter(1);
-const distortion = new Tone.Reverb(2);
-player.chain(filter, distortion, Tone.Destination);
+const reverb = new Tone.Reverb(1);
+
+player.chain(reverb, limiter, Tone.Destination);
 
 const toneMeter = new Tone.Meter();
 player.connect(toneMeter);
@@ -18,7 +20,7 @@ const toneWaveform = new Tone.Waveform(16);
 player.connect(toneWaveform);
 
 
-const tonnetz = <Tonnetz width={600} height={400} player={player} Tone={Tone} follower={toneMeter}/>;
+const tonnetz = <Tonnetz width={600} height={400} player={player} Tone={Tone} follower={toneMeter} toneFFT={toneFFT}/>;
 
 
 class App extends Component {

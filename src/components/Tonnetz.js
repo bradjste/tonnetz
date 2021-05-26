@@ -21,14 +21,16 @@ class Tonnetz extends React.Component {
       this.voronoi.obj = new Voronoi();
       this.voronoi.bbox = {xl: 0, xr: p5.width, yt: 0, yb: p5.height}; // xl is x-left, xr is x-right, yt is y-top, and yb is y-bottom
       this.voronoi.sites = this.getSitesFromNodes();
-      this.voronoi.diagram = this.voronoi.obj.compute(this.voronoi.sites, this.voronoi.bbox)
-    }
-
-    computeVoronoi = () => {
-      this.voronoi.recycle(this.voronoi.diagram);
-      this.voronoi.bbox = {xl: 0, xr: p5.width, yt: 0, yb: p5.height}; // xl is x-left, xr is x-right, yt is y-top, and yb is y-bottom
-      this.voronoi.sites = this.getSitesFromNodes();
       this.voronoi.diagram = this.voronoi.obj.compute(this.voronoi.sites, this.voronoi.bbox);
+      for (let i=0; i < this.state.nodes.length; i++) {
+        let node = this.state.nodes[i];
+        for (let j=0; j< this.voronoi.diagram.cells.length; j++) {
+          const cell = this.voronoi.diagram.cells[j];
+          if (Math.floor(cell.site.x) === Math.floor(node.screenPosition.x) && Math.floor(cell.site.y) === Math.floor(node.screenPosition.y)) {
+            node.setCell(cell);
+          }
+        }
+      }
     }
 
     drawVoronoi = (p5) => {
@@ -48,8 +50,6 @@ class Tonnetz extends React.Component {
           y: this.state.nodes[i].screenPosition.y
         })
       }
-
-      console.log(sites,this.state.nodes)
 
       return sites;
     }
@@ -73,6 +73,15 @@ class Tonnetz extends React.Component {
         }
       });
     }
+
+    drawCell = (p5,cell) => {
+      p5.beginShape();
+      for (let i=0; i< cell.halfedges.length; i++) {
+        const halfEdgeStart = cell.halfedges[i].getStartpoint();
+        p5.vertex(halfEdgeStart.x,halfEdgeStart.y);
+      }
+      p5.endShape();
+    }
   
     Sketch = (p5) => {
         p5.setup = () => {
@@ -87,23 +96,33 @@ class Tonnetz extends React.Component {
         
         p5.draw = () => {
           p5.background(0,0,0);
-          this.drawVoronoi(p5);
-          p5.noStroke();
+
           let ampWidth = 0;
           for (let i=0; i<this.state.nodes.length; i++) {
             let node = this.state.nodes[i];
-            if (node.active) {
-              ampWidth = 30+Math.floor(Math.max(this.props.follower.getValue(),-30));
-            } else {
-              ampWidth = 0;
-            }
-            p5.fill(node.color.h,node.color.s,node.color.v);
-            p5.ellipse(node.screenPosition.x,node.screenPosition.y,this.state.nodeWidth + ampWidth,this.state.nodeWidth + ampWidth);
-            p5.fill(0);
-            p5.text(node.generator+','+node.period, node.screenPosition.x,node.screenPosition.y);
-          }
-          p5.fill(1);
+            ampWidth = 30+Math.floor(Math.max(this.props.follower.getValue(),-30));
+            // if (node.active) {
+            // } else {
+            //   ampWidth = 0;
+            // }
+            // p5.ellipse(node.screenPosition.x,node.screenPosition.y,this.state.nodeWidth + ampWidth,this.state.nodeWidth + ampWidth);
 
+            if (node.active) {
+              p5.fill(node.color.h,node.color.s,node.color.v,1);
+            } else {
+              p5.fill(node.color.h,node.color.s,node.color.v,0.7);
+            }
+
+            this.drawCell(p5,node.cell);
+
+            // p5.fill(1);
+            // p5.text(node.generator+','+node.period, node.screenPosition.x,node.screenPosition.y);
+          }
+
+          this.drawVoronoi(p5);
+          p5.noStroke();
+
+          p5.fill(1);
           for (let t=0; t<p5.touches.length; t++) {
             for (let i=0; i<this.state.nodes.length; i++) {
               const touch = p5.touches[t];
@@ -118,9 +137,8 @@ class Tonnetz extends React.Component {
         p5.mousePressed = (event) => {
           for (let i=0; i<this.state.nodes.length; i++) {
             const node = this.state.nodes[i];
-            if (p5.dist(event.offsetX,event.offsetY,node.screenPosition.x,node.screenPosition.y) <= this.state.nodeWidth/2) {
+            if (p5.dist(event.offsetX,event.offsetY,node.screenPosition.x,node.screenPosition.y) <= this.state.nodeWidth/1.5) {
               this.playNote(node);
-              console.log(node)
             }
           }
         }
@@ -138,9 +156,7 @@ class Tonnetz extends React.Component {
     }
 
     checkShifter = (p5,keyCode) => {
-      console.log(keyCode)
       if (p5.keyIsDown(32)) {
-        console.log(keyCode)
         return -1;
       }
       if (p5.keyIsDown(p5.SHIFT)) {
@@ -150,7 +166,6 @@ class Tonnetz extends React.Component {
     }
 
     playNote = (node) => {
-      // console.log("("+node.generator + ',' + node.period + '): ' + node.freq);
       if (node !== null && !node.active) {
         this.props.player.triggerAttackRelease(node.freq, "8n", this.props.Tone.now());
         node.setActive();
@@ -282,6 +297,7 @@ class Node {
     this.freq = freq;
     this.screenPosition = screenPosition;
     this.active = false;
+    this.cell = null;
   }
 
   setActive = () => {
@@ -289,7 +305,11 @@ class Node {
 
     setTimeout(() => {
       this.active = false
-    }, 100);
+    }, 200);
+  }
+
+  setCell = (cell) => {
+    this.cell = cell;
   }
 }
 
