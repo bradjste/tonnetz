@@ -97,10 +97,10 @@ class Tonnetz extends React.Component {
         p5.draw = () => {
           p5.background(0,0,0);
 
-          let ampWidth = 0;
+          // let ampWidth = 0;
           for (let i=0; i<this.state.nodes.length; i++) {
             let node = this.state.nodes[i];
-            ampWidth = 30+Math.floor(Math.max(this.props.follower.getValue(),-30));
+            // ampWidth = 30+Math.floor(Math.max(this.props.follower.getValue(),-30));
             // if (node.active) {
             // } else {
             //   ampWidth = 0;

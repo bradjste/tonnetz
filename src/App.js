@@ -5,7 +5,6 @@ import Tonnetz from './components/Tonnetz';
 
 const limiter = new Tone.Limiter(-12).toDestination();
 const player = new Tone.PolySynth(Tone.Synth).connect(limiter);
-const filter = new Tone.AutoFilter(1);
 const reverb = new Tone.Reverb(1);
 
 player.chain(reverb, limiter, Tone.Destination);
