@@ -62,7 +62,7 @@ class Tonnetz extends React.Component {
          nodes.push(
            new Node(g,p,
                     this.getFreq(g,p,this.state.root),
-                    {h:(g+3)/7,s:1-(p+2)/5,v:1},
+                    {h:(g+3)/7,s:1-(((p+2)/4)+((g+3)/7))/2,v:1},
                     this.getScreenPosition(g,p,this.state.nodeWidth,p5)));
        }
       }
@@ -112,15 +112,8 @@ class Tonnetz extends React.Component {
         p5.draw = () => {
           p5.background(0,0,0);
 
-          // let ampWidth = 0;
           for (let i=0; i<this.state.nodes.length; i++) {
             let node = this.state.nodes[i];
-            // ampWidth = 30+Math.floor(Math.max(this.props.follower.getValue(),-30));
-            // if (node.active) {
-            // } else {
-            //   ampWidth = 0;
-            // }
-            // p5.ellipse(node.screenPosition.x,node.screenPosition.y,this.state.nodeWidth + ampWidth,this.state.nodeWidth + ampWidth);
 
             if (node.active) {
               p5.fill(node.color.h,node.color.s,node.color.v,1);
@@ -294,8 +287,8 @@ class Tonnetz extends React.Component {
       let x = p5.width/2 + width * (2*gen + per);
       let y = p5.height/2 + Math.sqrt(3) * width * -per;
       if (p5.width < p5.height) {
-        x = p5.width/2 + Math.sqrt(3) * width * per;
-        y = p5.height/2 + width * (2*gen + -per);
+        x = p5.width/2 - (Math.sqrt(3) * width * -per);
+        y = p5.height/2 - (width * (2*gen + per));
       }
       return {
         x: x,
