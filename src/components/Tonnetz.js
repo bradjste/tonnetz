@@ -82,6 +82,21 @@ class Tonnetz extends React.Component {
       }
       p5.endShape();
     }
+
+    shouldTriggerNote = (x,y,cell) => {
+      var vs = cell.halfedges;
+      var inside = false;
+      for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+        var xi = vs[i].getStartpoint().x, yi = vs[i].getStartpoint().y;
+        var xj = vs[j].getStartpoint().x, yj = vs[j].getStartpoint().y;
+          
+        var intersect = ((yi > y) !== (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+      }
+      
+      return inside;
+    }
   
     Sketch = (p5) => {
         p5.setup = () => {
@@ -114,9 +129,6 @@ class Tonnetz extends React.Component {
             }
 
             this.drawCell(p5,node.cell);
-
-            // p5.fill(1);
-            // p5.text(node.generator+','+node.period, node.screenPosition.x,node.screenPosition.y);
           }
 
           this.drawVoronoi(p5);
@@ -127,8 +139,9 @@ class Tonnetz extends React.Component {
             for (let i=0; i<this.state.nodes.length; i++) {
               const touch = p5.touches[t];
               const node = this.state.nodes[i];
-              if (p5.dist(touch.x,touch.y,node.screenPosition.x,node.screenPosition.y) <= this.state.nodeWidth/2) {
+              if (this.shouldTriggerNote(touch.x,touch.y,node.cell)) {
                 this.playNote(node);
+                break;
               }
             }
           }
@@ -137,8 +150,9 @@ class Tonnetz extends React.Component {
         p5.mousePressed = (event) => {
           for (let i=0; i<this.state.nodes.length; i++) {
             const node = this.state.nodes[i];
-            if (p5.dist(event.offsetX,event.offsetY,node.screenPosition.x,node.screenPosition.y) <= this.state.nodeWidth/1.5) {
+            if (this.shouldTriggerNote(event.offsetX,event.offsetY,node.cell)) {
               this.playNote(node);
+              break;
             }
           }
         }
@@ -167,11 +181,12 @@ class Tonnetz extends React.Component {
 
     playNote = (node) => {
       if (node !== null && !node.active) {
-        this.props.player.triggerAttackRelease(node.freq, "8n", this.props.Tone.now());
+        this.props.player.triggerAttackRelease(node.freq, "4n", this.props.Tone.now());
         node.setActive();
       }
     }
 
+    //I'm going to hell for this
     getNodeFromKey = (key,shifter) => {
       //bottom row
       key = key.toLowerCase();
@@ -276,9 +291,15 @@ class Tonnetz extends React.Component {
     }
 
     getScreenPosition = (gen,per,width,p5) => {
+      let x = p5.width/2 + width * (2*gen + per);
+      let y = p5.height/2 + Math.sqrt(3) * width * -per;
+      if (p5.width < p5.height) {
+        x = p5.width/2 + Math.sqrt(3) * width * per;
+        y = p5.height/2 + width * (2*gen + -per);
+      }
       return {
-        x:p5.width/2 + width * (2*gen + per),
-        y:p5.height/2 + Math.sqrt(3) * width * -per
+        x: x,
+        y: y
       }
     }
   
@@ -295,7 +316,8 @@ class Node {
     this.period = period;
     this.color = color;
     this.freq = freq;
-    this.screenPosition = screenPosition;
+    this.screenPosition = {x:screenPosition.x+Math.random()*20,
+                           y:screenPosition.y+Math.random()*20};
     this.active = false;
     this.cell = null;
   }
